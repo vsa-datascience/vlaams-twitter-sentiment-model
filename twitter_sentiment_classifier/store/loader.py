@@ -3,12 +3,26 @@ import os
 import re
 import shutil
 from glob import glob
+from pathlib import Path
+from typing import List
 from urllib.error import HTTPError
 from urllib.request import urlretrieve
 
 from tqdm import tqdm
 
+# TODO: Update
 S3_URL = "https://production-sentiment-flanders-webapp.s3-eu-west-1.amazonaws.com/sentiment_classifier/"
+
+
+class NoDataException(Exception):
+    """Custom exception thrown when trying to load in data."""
+    
+    def __init__(self, data_names: List[str], path: Path = Path(__file__).parent) -> None:
+        self.message = "Unable to load required data, please download the following:\n"
+        for name in data_names:
+            self.message += f"\t- {name}\n"
+        self.message += f"and store them under {path}"
+        super().__init__(self.message)
 
 
 def tqdm_hook(t):
@@ -23,7 +37,13 @@ def tqdm_hook(t):
     return update_to
 
 
-def fetch_data_file(file: str):
+def fetch_data_file(file: str) -> bool:
+    """Fetch the requested data file from store."""
+    filename = f"{os.path.dirname(__file__)}/data/{file}"
+    return os.path.exists(filename)
+
+
+def fetch_data_file_s3(file: str) -> bool:
     """Fetch the requested data file from S3."""
     filename = f"{os.path.dirname(__file__)}/data/{file}"
     if os.path.exists(filename): return True
@@ -49,36 +69,33 @@ def fetch_data_file(file: str):
 
 
 def fetch_all_tweet_data():
-    """Fetch all the tweet-data from S3."""
-    fetch_data_file('tweets_annotated.jsonl')
-    fetch_data_file('tweets_sorted.jsonl')
-    fetch_data_file('tweets_test.jsonl')
-    fetch_data_file('tweets_train.jsonl')
-    fetch_data_file('tweets_val.jsonl')
+    """Check if all the tweet-data is stored locally."""
+    data_names = [
+        'tweets_annotated.jsonl',
+        'tweets_sorted.jsonl',
+        'tweets_test.jsonl',
+        'tweets_train.jsonl',
+        'tweets_val.jsonl',
+    ]
+    
+    # Check if all data samples stored locally
+    for name in data_names:
+        if not fetch_data_file(name):
+            raise NoDataException(
+                    data_names=data_names,
+                    path=Path(__file__).parent / 'data',
+            )
 
 
 def fetch_tweet_dump(output_dir: str):
-    """Load all raw twitter-API query-results in zipped format from s3."""
-    filename = f"{os.path.dirname(__file__)}/raw_dump.zip"
-    if os.path.exists(f"{output_dir}/raw_dump"): return True
-    
-    # raw_dump does not exists locally, check if on server
-    try:
-        url = f'{S3_URL}raw_dump.zip'
-        with tqdm(unit='B', unit_scale=True, unit_divisor=1024, miniters=1, desc=f"Downloading raw_dump") as pbar:
-            urlretrieve(
-                    url,
-                    filename=filename,
-                    reporthook=tqdm_hook(pbar),
-            )
-        print(f"Unzipping raw_dump...")
-        shutil.unpack_archive(
-                f"{os.path.dirname(__file__)}/raw_dump.zip",
-                f"{output_dir}/raw_dump",
-        )
+    """Load all raw twitter-API query-results in zipped format from local store."""
+    if os.path.exists(f"{output_dir}/raw_dump"):
         return True
-    except HTTPError:
-        raise Exception("Unable to load test-dataset!")
+    
+    # raw_dump does not exists locally, throw error
+    raise NoDataException([
+        'raw_dump.zip',
+    ])
 
 
 def fetch_model(
