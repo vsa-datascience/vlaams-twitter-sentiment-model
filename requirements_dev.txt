@@ -1,0 +1,10 @@
+emoji~=0.6.0
+pandas
+pandas_profiling
+tensorflow
+tensorflow_hub
+tensorflow_text
+umap-learn
+lit-nlp
+tensorflow_datasets
+hyperopt
