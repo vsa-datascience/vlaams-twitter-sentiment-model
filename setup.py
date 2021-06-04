@@ -30,7 +30,7 @@ INSTALL_REQUIRES = [
 # noinspection SpellCheckingInspection
 setup(
         name="twitter-sentiment-classifier",
-        version="0.1.0",
+        version="0.1.1",
         description="Define the sentiment of Dutch tweets by means of a Transformer model.",
         long_description=README,
         long_description_content_type="text/markdown",
