@@ -10,8 +10,8 @@ from urllib.request import urlretrieve
 
 from tqdm import tqdm
 
-# TODO: Update
-S3_URL = "https://production-sentiment-flanders-webapp.s3-eu-west-1.amazonaws.com/sentiment_classifier/"
+# Public S3 bucket
+S3_URL = "http://default-twittersentiment-webapp.s3-website-eu-west-1.amazonaws.com/sentiment_classifier/"
 
 
 class NoDataException(Exception):
