@@ -10,9 +10,9 @@ README = (HERE / "README.md").read_text()
 
 INSTALL_REQUIRES = [
     # Necessary requirements
-    'scikit-learn~=0.23.2',
-    'torch~=1.7.0',
-    'transformers~=4.0.0',
+    'scikit-learn',
+    'torch',
+    'transformers',
     'tqdm',  # Do not specify version, may conflict with other packages
     
     # Development requirements, see requirements_dev.txt
